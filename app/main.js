@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import fs from "fs"; 
 
 async function main() {
   const [, , flag, prompt] = process.argv;
@@ -40,30 +41,6 @@ async function main() {
         },
       },
     ],
-    tool_call: [
-      {
-        choices: [
-          {
-            index: 0,
-            message: {
-              role: "assistant",
-              content: null,
-              tool_calls: [
-                {
-                  id: "call_abc123",
-                  type: "function",
-                  function: {
-                    name: "Read",
-                    arguments: '{"file_path": "/path/to/file.txt"}',
-                  },
-                },
-              ],
-            },
-            finish_reason: "tool_calls",
-          },
-        ],
-      },
-    ],
   });
 
   if (!response.choices || response.choices.length === 0) {
@@ -74,7 +51,17 @@ async function main() {
   console.error("Logs from your program will appear here!");
 
   // TODO: Uncomment the lines below to pass the first stage
-  console.log(response.choices[0].message.content);
+  const message = response.choices[0].message;
+  if (message.tools && message.tools.length > 0) {
+    const toolCall = message.tools[0];
+    if (toolCall.function.name === "Read") {
+      const args = JSON.parse(toolCall.function.arguments);
+      const fileContent = fs.readFileSync(args.file_path, "utf-8");
+      console.log(fileContent);
+    }
+  } else {
+    console.log(message.content);
+  }
 }
 
 main();
