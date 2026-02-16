@@ -53,7 +53,7 @@ async function main() {
   // TODO: Uncomment the lines below to pass the first stage
   const message = response.choices[0].message;
  
-  if (message.tools && message.tools.length > 0) {
+  if (message.tool_calls && message.tool_calls.length > 0) {
     const toolCall = message.tool_calls[0];
     if (toolCall.function.name === "Read") {
       const args = JSON.parse(toolCall.function.arguments);
