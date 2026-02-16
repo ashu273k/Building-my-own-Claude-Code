@@ -52,6 +52,7 @@ async function main() {
 
   // TODO: Uncomment the lines below to pass the first stage
   const message = response.choices[0].message;
+  console.log("Received message:", message);
   if (message.tools && message.tools.length > 0) {
     const toolCall = message.tools[0];
     if (toolCall.function.name === "Read") {
