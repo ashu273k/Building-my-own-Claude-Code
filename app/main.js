@@ -52,14 +52,7 @@ async function main() {
   // TODO: Uncomment the lines below to pass the first stage
   console.log(response.choices[0].message.content);
 
-  await client.chat.completions.create({
-    model: "anthropic/claude-haiku-4.5",
-    messages: [{ role: "user", content: prompt }],
-    tools: [
-      // Add your tool specifications here
-      Read,
-    ],
-  });
+  
 }
 
 main();
