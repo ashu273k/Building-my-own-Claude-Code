@@ -60,7 +60,7 @@ async function main() {
 
     if(
       choice.finish_reason === "stop" ||
-      !message.tools_calls ||
+      !message.tool_calls ||
       message.tool_calls.length === 0
     ) {
       console.log(message.content);
