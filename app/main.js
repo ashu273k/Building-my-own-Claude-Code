@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import fs from "fs"; 
+import fs from "fs";
 
 async function main() {
   const [, , flag, prompt] = process.argv;
@@ -23,7 +23,7 @@ async function main() {
 
   const tools = [
     {
-      type: "function", 
+      type: "function",
       function: {
         name: "Read",
         description: "Read and return the content of a file",
@@ -36,50 +36,66 @@ async function main() {
             },
           },
           required: ["file_path"],
-        }
-
-      }
+        },
+      },
     },
     {
-      "type": "function",
-      "function": {
-        "name": "Write",
-        "description": "Write content to a file",
-        "parameters": {
-          "type": "object",
-          "required": ["file_path", "content"],
-          "properties": {
-            "file_path": {
-              "type": "string",
-              "description": " The path of the file to write to"
+      type: "function",
+      function: {
+        name: "Write",
+        description: "Write content to a file",
+        parameters: {
+          type: "object",
+          required: ["file_path", "content"],
+          properties: {
+            file_path: {
+              type: "string",
+              description: " The path of the file to write to",
             },
-            "content": {
-              "type": "string",
-              "description": " The content to write to the file"
-            }
-          }
-        }
-      }
-    }
-  ]
+            content: {
+              type: "string",
+              description: " The content to write to the file",
+            },
+          },
+        },
+      },
+    },
+    {
+      type: "function",
+      function: {
+        name: "Bash",
+        description: "Execute a shell command",
+        parameters: {
+          type: "object",
+          required: ["command"],
+          properties: {
+            command: {
+              type: "string",
+              description: "The command to execute",
+            },
+          },
+        },
+      },
+    },
+  ];
 
   while (true) {
     const response = await client.chat.completions.create({
       model: "anthropic/claude-haiku-4.5",
       messages: messages,
       tools: tools,
-    })
+    });
 
     if (!response.choices || response.choices.length === 0) {
-      throw new Error("no choices in response")
+      throw new Error("no choices in response");
     }
 
     const choice = response.choices[0];
-    const message = choice.message
-    
+    const message = choice.message;
+
     messages.push(message);
 
-    if(
+    if (
       choice.finish_reason === "stop" ||
       !message.tool_calls ||
       message.tool_calls.length === 0
@@ -90,32 +106,45 @@ async function main() {
 
     for (const toolCall of message.tool_calls) {
       if (toolCall.function.name === "Read") {
-        const args = JSON.parse(toolCall.function.arguments)
+        const args = JSON.parse(toolCall.function.arguments);
         const fileContent = fs.readFileSync(args.file_path, "utf-8");
         messages.push({
           role: "tool",
           tool_call_id: toolCall.id,
           content: fileContent,
-        })
+        });
       }
       if (toolCall.function.name === "Write") {
-        const args = JSON.parse(toolCall.function.arguments)
+        const args = JSON.parse(toolCall.function.arguments);
         fs.writeFileSync(args.file_path, args.content);
         messages.push({
           role: "tool",
           tool_call_id: toolCall.id,
           content: `Successfully wrote to file ${args.file_path}`,
-        })
+        });
+      }
+      if (toolCall.function.name === "Bash") {
+        const args = JSON.parse(toolCall.function.arguments);
+        const execSync = require("child_process").execSync;
+        try {
+          const output = execSync(args.command, { encoding: "utf-8" });
+          messages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: output,
+          });
+        } catch (error) {
+          messages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: `Error executing command: ${error.message}`,
+          });
+        }
       }
     }
   }
- 
 
-
-
-  
   // TODO: Uncomment the lines below to pass the first stage
-
 }
 
 main();
