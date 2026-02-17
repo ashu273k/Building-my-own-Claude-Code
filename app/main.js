@@ -67,17 +67,20 @@ async function main() {
   console.error("Logs from your program will appear here!");
 
   // TODO: Uncomment the lines below to pass the first stage
-  const message = response.choices[0].message;
- 
-  if (message.tool_calls && message.tool_calls.length > 0) {
-    const toolCall = message.tool_calls[0];
-    if (toolCall.function.name === "Read") {
-      const args = JSON.parse(toolCall.function.arguments);
-      const fileContent = fs.readFileSync(args.file_path, "utf-8");
-      console.log(fileContent);
+  for (let i = 0; i < response.choices.length; i++) {
+
+    const message = response.choices[i].message;
+   
+    if (message.tool_calls && message.tool_calls.length > 0) {
+      const toolCall = message.tool_calls[0];
+      if (toolCall.function.name === "Read") {
+        const args = JSON.parse(toolCall.function.arguments);
+        const fileContent = fs.readFileSync(args.file_path, "utf-8");
+        console.log(fileContent);
+      }
+    } else {
+      console.log(message.content);
     }
-  } else {
-    console.log(message.content);
   }
 }
 
