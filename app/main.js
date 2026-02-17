@@ -39,6 +39,27 @@ async function main() {
         }
 
       }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "Write",
+        "description": "Write content to a file",
+        "parameters": {
+          "type": "object",
+          "required": ["file_path", "content"],
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": " The path of the file to write to"
+            },
+            "content": {
+              "type": "string",
+              "description": " The content to write to the file"
+            }
+          }
+        }
+      }
     }
   ]
 
@@ -75,6 +96,15 @@ async function main() {
           role: "tool",
           tool_call_id: toolCall.id,
           content: fileContent,
+        })
+      }
+      if (toolCall.function.name === "Write") {
+        const args = JSON.parse(toolCall.function.arguments)
+        fs.writeFileSync(args.file_path, args.content);
+        messages.push({
+          role: "tool",
+          tool_call_id: toolCall.id,
+          content: `Successfully wrote to file ${args.file_path}`,
         })
       }
     }
