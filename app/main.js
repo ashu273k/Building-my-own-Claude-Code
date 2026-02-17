@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import fs from "fs";
+import child_process from "child_process";
 
 async function main() {
   const [, , flag, prompt] = process.argv;
@@ -125,7 +126,7 @@ async function main() {
       }
       if (toolCall.function.name === "Bash") {
         const args = JSON.parse(toolCall.function.arguments);
-        const execSync = require("child_process").execSync;
+        const execSync = child_process.execSync;
         try {
           const output = execSync(args.command, { encoding: "utf-8" });
           messages.push({
