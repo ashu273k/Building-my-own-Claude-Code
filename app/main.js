@@ -21,7 +21,23 @@ async function main() {
 
   const response = await client.chat.completions.create({
     model: "anthropic/claude-haiku-4.5",
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      { role: "user", content: prompt },
+      {role: "user", content: "Summarize the README for me."},
+      {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_abc123",
+            "function": {
+              "name": "Read",
+              "arguments": "{\"file_path\": \"./README.md\"}"
+            }
+          }
+        ]
+      }
+    ],
     tools: [
       {
         type: "function",
