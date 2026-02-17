@@ -144,7 +144,6 @@ async function main() {
     }
   }
 
-  // TODO: Uncomment the lines below to pass the first stage
 }
 
 main();
